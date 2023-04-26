@@ -1,0 +1,19 @@
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+      - name: Build client
+        run: dotnet build --configuration Release
+
+      - name: Upload to Github Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ClientZip
+          path: ./Build/Client/Release
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
