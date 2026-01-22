@@ -10,12 +10,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server.Library", "Server\Se
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server.MirForms\Server.csproj", "{884D7004-37B4-4C38-AA64-F73BF64E9CB4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notes", "Notes", "{F75359D0-CBBC-49F2-9BB7-3AAC3B4D775F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{F75359D0-CBBC-49F2-9BB7-3AAC3B4D775F}"
 	ProjectSection(SolutionItems) = preProject
-		dotnet-upgrade.txt = dotnet-upgrade.txt
-		MonsterAttackMethods.txt = MonsterAttackMethods.txt
-		MonsterReferenceVideos.txt = MonsterReferenceVideos.txt
-		SoundRules.txt = SoundRules.txt
+		Docs\dotnet-upgrade.md = Docs\dotnet-upgrade.md
+		Docs\how-to-docker.md = Docs\how-to-docker.md
+		Docs\MonsterAttackMethods.md = Docs\MonsterAttackMethods.md
+		Docs\MonsterReferenceVideos.md = Docs\MonsterReferenceVideos.md
+		Docs\SoundRules.md = Docs\SoundRules.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PatcherWebSite", "PatcherWebSite", "{A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D}"
