@@ -1,4 +1,4 @@
-﻿using Server.MirEnvir;
+using Server.MirEnvir;
 
 namespace Server.MirDatabase
 {
@@ -11,6 +11,10 @@ namespace Server.MirDatabase
         public byte AutoHPPercent;
         public byte AutoMPPercent;
         public ushort SealCount;
+        public HeroInfo()
+        {
+            Inventory = new UserItem[10];
+        }
         public HeroInfo(ClientPackets.NewHero p)
         {
             Name = p.Name;

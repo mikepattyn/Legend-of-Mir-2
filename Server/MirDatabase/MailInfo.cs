@@ -1,4 +1,4 @@
-﻿using Server.MirDatabase;
+using Server.MirDatabase;
 
 namespace Server.MirEnvir
 {
@@ -42,6 +42,10 @@ namespace Server.MirEnvir
         }
 
         public bool CanReply;
+
+        public MailInfo()
+        {
+        }
 
         public MailInfo(int recipientIndex, bool canReply = false)
         {

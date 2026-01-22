@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using Server.MirDatabase;
 using Server.MirObjects;
@@ -100,6 +100,8 @@ namespace Server
         //Database
         public static int SaveDelay = 5;
         public static short CredxGold = 30;
+        public static bool UseEfDatabase = false;
+        public static string EfConnectionString = "Data Source=mir2.db";
 
         //Game
         public static List<long> ExperienceList = new List<long>();
@@ -422,6 +424,8 @@ namespace Server
             //Database
             SaveDelay = Reader.ReadInt32("Database", "SaveDelay", SaveDelay);
             CredxGold = Reader.ReadInt16("Database", "CredxGold", CredxGold);
+            UseEfDatabase = Reader.ReadBoolean("Database", "UseEfDatabase", UseEfDatabase);
+            EfConnectionString = Reader.ReadString("Database", "EfConnectionString", EfConnectionString);
 
             //Game
             DropRate = Reader.ReadSingle("Game", "DropRate", DropRate);

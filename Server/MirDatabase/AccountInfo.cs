@@ -1,4 +1,4 @@
-﻿using Server.MirNetwork;
+using Server.MirNetwork;
 using Server.MirEnvir;
 using Server.Utils;
 using C = ClientPackets;
@@ -27,6 +27,12 @@ namespace Server.MirDatabase
                 password = Crypto.HashPassword(value, Salt);
                 
             }
+        }
+
+        internal void SetPasswordHash(string passwordHash, byte[] salt)
+        {
+            password = passwordHash ?? string.Empty;
+            Salt = salt ?? Array.Empty<byte>();
         }
 
         public byte[] Salt = new byte[24];

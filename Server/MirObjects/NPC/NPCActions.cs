@@ -21,14 +21,14 @@ namespace Server.MirObjects
         /// <summary>
         /// Teleports the player to a specified map and coordinates.
         /// <para>Parameters: mapName, x, y (x and y default to 0 if not provided, which triggers random teleport)</para>
-        /// <para>Example: MOVE BichonProvince 100 100</para>
+        /// <para>Example: MOVE DogYoMineLobby1 32 31</para>
         /// </summary>
         Move,
         
         /// <summary>
         /// Teleports the player to a specific instance of a map with coordinates.
         /// <para>Parameters: mapName, instanceId, x, y</para>
-        /// <para>Example: INSTANCEMOVE DogYoMineLobby1 1 50 50</para>
+        /// <para>Example: INSTANCEMOVE DogYoMineLobby1 1 32 31</para>
         /// </summary>
         InstanceMove,
         
