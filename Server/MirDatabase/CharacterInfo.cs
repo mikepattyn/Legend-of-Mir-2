@@ -617,6 +617,10 @@ namespace Server.MirDatabase
 
         public long TameTime;
 
+        public PetInfo()
+        {
+        }
+
         public PetInfo(MonsterObject ob)
         {
             MonsterIndex = ob.Info.Index;
@@ -734,6 +738,10 @@ namespace Server.MirDatabase
 
         public bool Blocked;
         public string Memo;
+
+        public FriendInfo()
+        {
+        }
 
         public FriendInfo(CharacterInfo info, bool blocked) 
         {

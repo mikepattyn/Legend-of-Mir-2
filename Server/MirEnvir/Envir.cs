@@ -1,4 +1,5 @@
-﻿using ClientPackets;
+using ClientPackets;
+using Server.Database.Persistence;
 using Server.Library.MirDatabase;
 using Server.Library.Utils;
 using Server.MirDatabase;
@@ -62,6 +63,22 @@ namespace Server.MirEnvir
         public static readonly string ArchivePath = Path.Combine(".", "Archive");
         public bool ResetGS = false;
         public bool GuildRefreshNeeded;
+
+        private IMirPersistence _persistence;
+        private IMirPersistence Persistence
+        {
+            get
+            {
+                if (_persistence != null) return _persistence;
+
+                _persistence = Settings.UseEfDatabase
+                    ? new EfCorePersistence(Settings.EfConnectionString, msg => MessageQueue.Enqueue(msg))
+                    : new BinaryFilePersistence();
+
+                _persistence.Initialize();
+                return _persistence;
+            }
+        }
 
         private static readonly Regex AccountIDReg, PasswordReg, EMailReg, CharacterReg;
 
@@ -200,7 +217,7 @@ namespace Server.MirEnvir
             return false;
         }
 
-        private void UpdateMagicInfo()
+        internal void UpdateMagicInfo()
         {
             for (var i = 0; i < MagicInfoList.Count; i++)
             {
@@ -282,7 +299,7 @@ namespace Server.MirEnvir
             }
         }
 
-        private void FillMagicInfoList()
+        internal void FillMagicInfoList()
         {
             //Warrior
             if (!MagicExists(Spell.Fencing))
@@ -2139,10 +2156,17 @@ namespace Server.MirEnvir
                         if (Time >= saveTime)
                         {
                             saveTime = Time + Settings.SaveDelay * Settings.Minute;
-                            BeginSaveAccounts();
-                            SaveGuilds();
-                            SaveGoods();
-                            SaveConquests();
+                            if (Settings.UseEfDatabase)
+                            {
+                                Persistence.SaveAll(this, forced: false);
+                            }
+                            else
+                            {
+                                BeginSaveAccounts();
+                                SaveGuilds();
+                                SaveGoods();
+                                SaveConquests();
+                            }
                         }
 
                         if (Time >= userTime)
@@ -2189,9 +2213,12 @@ namespace Server.MirEnvir
 
                 StopNetwork();
                 StopEnvir();
-                SaveAccounts();
-                SaveGuilds(true);
-                SaveConquests(true);
+                if (!Settings.UseEfDatabase)
+                {
+                    SaveAccounts();
+                    SaveGuilds(true);
+                    SaveConquests(true);
+                }
             }
             catch (Exception ex)
             {
@@ -2589,7 +2616,7 @@ namespace Server.MirEnvir
             }
         }
 
-        private void SaveGuilds(bool forced = false)
+        internal void SaveGuilds(bool forced = false)
         {
             if (!Directory.Exists(Settings.GuildPath)) Directory.CreateDirectory(Settings.GuildPath);
 
@@ -2639,7 +2666,7 @@ namespace Server.MirEnvir
             }
         }
 
-        private void SaveGoods(bool forced = false)
+        internal void SaveGoods(bool forced = false)
         {
             if (!Directory.Exists(Settings.GoodsPath)) Directory.CreateDirectory(Settings.GoodsPath);
 
@@ -2702,7 +2729,7 @@ namespace Server.MirEnvir
             }
         }
 
-        private void SaveConquests(bool forced = false)
+        internal void SaveConquests(bool forced = false)
         {
             if (!Directory.Exists(Settings.ConquestsPath)) Directory.CreateDirectory(Settings.ConquestsPath);
             for (var i = 0; i < ConquestList.Count; i++)
@@ -3289,7 +3316,7 @@ namespace Server.MirEnvir
             Heroes.Clear();
             MonsterCount = 0;
 
-            LoadDB();
+            Persistence.LoadServerData(this);
 
             BuffInfoList.Clear();
             foreach (var buff in BuffInfo.Load())
@@ -3385,11 +3412,7 @@ namespace Server.MirEnvir
         {
             Connections.Clear();
 
-            LoadAccounts();
-
-            LoadGuilds();
-
-            LoadConquests();
+            Persistence.LoadUserData(this);
             LoadGTInfo();
 
             _listener = new TcpListener(IPAddress.Parse(Settings.IPAddress), Settings.Port);
@@ -3408,7 +3431,10 @@ namespace Server.MirEnvir
 
         private void StopEnvir()
         {
-            SaveGoods(true);
+            if (Settings.UseEfDatabase)
+                Persistence.SaveAll(this, forced: true);
+            else
+                SaveGoods(true);
 
             MapList.Clear();
             StartPoints.Clear();
