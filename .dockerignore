@@ -1,0 +1,34 @@
+# Exclude C# projects that aren't needed for the patcher website
+Client/
+Server/
+Shared/
+AutoPatcherAdmin/
+LibraryEditor/
+LibraryViewer/
+Controls/
+Components/
+
+# Exclude design source files from PatcherWebSite/assets
+PatcherWebSite/assets/*.psd
+PatcherWebSite/assets/*.PSD
+
+# Exclude common development files
+.git/
+.gitignore
+.gitattributes
+.editorconfig
+
+# Exclude documentation
+Docs/
+
+# Exclude Docker files themselves (they're in the build context)
+docker-compose.yml
+
+# Exclude any build artifacts
+*.csproj
+*.sln
+bin/
+obj/
+*.dll
+*.exe
+*.pdb

@@ -1,4 +1,3 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33424.131
@@ -11,12 +10,52 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server.Library", "Server\Se
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server.MirForms\Server.csproj", "{884D7004-37B4-4C38-AA64-F73BF64E9CB4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notes", "Notes", "{F75359D0-CBBC-49F2-9BB7-3AAC3B4D775F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{F75359D0-CBBC-49F2-9BB7-3AAC3B4D775F}"
 	ProjectSection(SolutionItems) = preProject
-		dotnet-upgrade.txt = dotnet-upgrade.txt
-		MonsterAttackMethods.txt = MonsterAttackMethods.txt
-		MonsterReferenceVideos.txt = MonsterReferenceVideos.txt
-		SoundRules.txt = SoundRules.txt
+		Docs\dotnet-upgrade.md = Docs\dotnet-upgrade.md
+		Docs\how-to-docker.md = Docs\how-to-docker.md
+		Docs\MonsterAttackMethods.md = Docs\MonsterAttackMethods.md
+		Docs\MonsterReferenceVideos.md = Docs\MonsterReferenceVideos.md
+		Docs\SoundRules.md = Docs\SoundRules.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PatcherWebSite", "PatcherWebSite", "{A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D}"
+	ProjectSection(SolutionItems) = preProject
+		PatcherWebSite\index.html = PatcherWebSite\index.html
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "css", "css", "{C3D4E5F6-A7B8-4C5D-9E0F-1A2B3C4D5E6F}"
+	ProjectSection(SolutionItems) = preProject
+		PatcherWebSite\css\reset.css = PatcherWebSite\css\reset.css
+		PatcherWebSite\css\style.css = PatcherWebSite\css\style.css
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "js", "js", "{D4E5F6A7-B8C9-4D5E-9F0A-1B2C3D4E5F6A}"
+	ProjectSection(SolutionItems) = preProject
+		PatcherWebSite\js\moment.js = PatcherWebSite\js\moment.js
+		PatcherWebSite\js\script.js = PatcherWebSite\js\script.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{E5F6A7B8-C9D0-4E5F-9A0B-1C2D3E4F5A6B}"
+	ProjectSection(SolutionItems) = preProject
+		PatcherWebSite\img\bg_launcher.png = PatcherWebSite\img\bg_launcher.png
+		PatcherWebSite\img\bg_launcher_1.png = PatcherWebSite\img\bg_launcher_1.png
+		PatcherWebSite\img\bg_launcher_2.png = PatcherWebSite\img\bg_launcher_2.png
+		PatcherWebSite\img\bg_launcher_3.png = PatcherWebSite\img\bg_launcher_3.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{F6A7B8C9-D0E1-4F5A-9B0C-1D2E3F4A5B6C}"
+	ProjectSection(SolutionItems) = preProject
+		PatcherWebSite\assets\bg_launcher_2.png = PatcherWebSite\assets\bg_launcher_2.png
+		PatcherWebSite\assets\bg_patcher.psd = PatcherWebSite\assets\bg_patcher.psd
+		PatcherWebSite\assets\Mir2 Mir3 logo.psd = PatcherWebSite\assets\Mir2 Mir3 logo.psd
+		PatcherWebSite\assets\No Glow.psd = PatcherWebSite\assets\No Glow.psd
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PatcherWebSite.Nginx", "PatcherWebSite.Nginx", "{A7B8C9D0-E1F2-4A5B-9C0D-1E2F3A4B5C6D}"
+	ProjectSection(SolutionItems) = preProject
+		PatcherWebSite.Nginx\default.conf = PatcherWebSite.Nginx\default.conf
+		PatcherWebSite.Nginx\Dockerfile = PatcherWebSite.Nginx\Dockerfile
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{02FF090B-782B-49FD-BFEC-E4B50DCFF698}"
@@ -32,6 +71,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryEditor", "LibraryEditor\LibraryEditor.csproj", "{A3B8CA9F-5C91-49CB-902D-62A38DF4EF93}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryViewer", "LibraryViewer\LibraryViewer.csproj", "{456E4777-5510-49E1-BE8D-C536753964E3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7346BC3F-44C0-4564-9F0E-853F6F401736}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +126,10 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{BBD617DB-9A42-41FD-8BB2-6B10B40E5E1C} = {02FF090B-782B-49FD-BFEC-E4B50DCFF698}
+		{C3D4E5F6-A7B8-4C5D-9E0F-1A2B3C4D5E6F} = {A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D}
+		{D4E5F6A7-B8C9-4D5E-9F0A-1B2C3D4E5F6A} = {A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D}
+		{E5F6A7B8-C9D0-4E5F-9A0B-1C2D3E4F5A6B} = {A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D}
+		{F6A7B8C9-D0E1-4F5A-9B0C-1D2E3F4A5B6C} = {A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D}
 		{6312929E-6CD5-48FE-A147-C10C09983A00} = {02FF090B-782B-49FD-BFEC-E4B50DCFF698}
 		{8E10D0C3-2E10-468B-BD77-C717ED6C7754} = {02FF090B-782B-49FD-BFEC-E4B50DCFF698}
 		{297E115E-AC0A-48CC-8FD7-059FED59BA73} = {8E10D0C3-2E10-468B-BD77-C717ED6C7754}
