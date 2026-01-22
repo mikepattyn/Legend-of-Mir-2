@@ -14,7 +14,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '8.0.x'
-      - name: Build client
+      - name: Build solution
         run: dotnet build --configuration Release
 
       - name: Upload to Github Artifacts
@@ -22,30 +22,21 @@ jobs:
         with:
           name: Client
           path: ./Build/Client/Release
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload to Github Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Server
           path: ./Build/Server/Release
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload to Github Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: LibraryEditor
           path: ./Build/Server Tools/LibraryEditor/Release
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload to Github Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: LibraryViewer
           path: ./Build/Server Tools/LibraryViewer/Release
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
