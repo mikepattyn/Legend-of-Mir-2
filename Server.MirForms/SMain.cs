@@ -1,4 +1,4 @@
-﻿using CustomFormControl;
+using CustomFormControl;
 using Server.Account;
 using Server.Database;
 using Server.MirDatabase;
@@ -432,6 +432,13 @@ namespace Server
         private void conquestToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ConquestInfoForm form = new ConquestInfoForm();
+
+            form.ShowDialog();
+        }
+
+        private void waveSpawnSystemToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            WaveSpawnSystemForm form = new WaveSpawnSystemForm();
 
             form.ShowDialog();
         }
