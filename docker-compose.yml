@@ -1,9 +1,7 @@
 services:
   patchsite:
-    container_name: crystal-patchsite-nginx
     build:
       context: .
       dockerfile: PatcherWebSite.Nginx/Dockerfile
     ports:
       - "8080:80"
-    restart: unless-stopped
