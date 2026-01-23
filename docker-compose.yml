@@ -1,0 +1,7 @@
+services:
+  patchsite:
+    build:
+      context: .
+      dockerfile: PatcherWebSite.Nginx/Dockerfile
+    ports:
+      - "8080:80"

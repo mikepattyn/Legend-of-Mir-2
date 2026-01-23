@@ -195,7 +195,7 @@ namespace Client
         public static string P_Login = string.Empty;
         public static string P_Password = string.Empty;
         public static string P_ServerName = string.Empty;
-        public static string P_BrowserAddress = "https://www.lomcn.org/mir2-patchsite/";
+        public static string P_BrowserAddress = "http://localhost:8080/";
         public static string P_Client = Application.StartupPath + "\\";
         public static bool P_AutoStart = false;
         public static int P_Concurrency = 1;

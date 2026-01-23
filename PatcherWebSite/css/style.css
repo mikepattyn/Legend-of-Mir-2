@@ -1,4 +1,4 @@
-﻿html {
+html {
     width: 786px;
     height: 411px;
     overflow: hidden;
@@ -9,33 +9,24 @@
 }
 
 body {
-    background: url(../img/bg_launcher_3.png);
+    background-image: url(../img/revamped.png);
+    background-size: contain;
     width: 100%;
     height: 100%;
 }
 
 .main {
-    height: 411px;
-    width: 584px;
+    height: 450px;
+    width: 800px;
     background-color: #282828;
     float:left;
 }
 
-#banner {
-    position: absolute;
-    left: 220px;
-    top: 15px;
-    width: 550px;
-    height: 160px;
-    border: 1px solid black;
-    background-color: white;
-    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
-}
 
 #updates {
     position: absolute;
-    left: 220px;
-    top: 200px;
+    left: 160px;
+    top: 160px;
     width: 320px;
     height: 180px;
     color: black;
@@ -81,31 +72,23 @@ body {
                     float: right;
                 }
 
-#buttons {
+#lomcn-button {
     position: absolute;
-    left: 612px;
-    top: 230px;
-    width: 157px;
-    height: 140px;
-    color: black;
-    background-color: white;
-    border: 1px solid black;
+    bottom: 100px;
+    right: 100px;
+    width: 250px;
+    height: 70px;
+    display: block;
+    cursor: pointer;
+    z-index: 10;
+    /* Transparent background - invisible but clickable */
+    background: transparent;
 }
 
-#buttons ul {
-    height: 100%;
+#lomcn-button:hover {
+    /* Optional: add a subtle hover effect */
+    opacity: 0.8;
 }
-
-#buttons ul li {
-    height: 37px;
-    width: 147px;
-    border-bottom: 1px solid black;
-    padding: 5px;
-}
-
-    #buttons ul li:first-child + li + li {
-        border-bottom: none;
-    }
 
 
 /*
