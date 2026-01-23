@@ -3423,25 +3423,11 @@ namespace Server.MirEnvir
             }
             SavedSpawns.Clear();
 
-            // Clear all map internal collections before clearing MapList
+            // Dispose all maps before clearing MapList
             // This ensures all nested collections are released and breaks reference chains
             foreach (var map in MapList)
             {
-                if (map != null)
-                {
-                    map.Respawns?.Clear();
-                    map.WalkableCells?.Clear();
-                    map.NPCs?.Clear();
-                    map.Players?.Clear();
-                    map.Spells?.Clear();
-                    map.Heroes?.Clear();
-                    map.ActionList?.Clear();
-                    map.Conquest?.Clear();
-                    // Nullify large arrays to help GC
-                    map.Cells = null;
-                    map.DoorIndex = null;
-                    map.Mine = null;
-                }
+                (map as IDisposable)?.Dispose();
             }
 
             MapList.Clear();
@@ -3470,7 +3456,12 @@ namespace Server.MirEnvir
 
             CleanUp();
 
-            GC.Collect();
+            // Force multiple GC collections with compaction to ensure cleanup
+            // This ensures all unreferenced objects are collected and memory is compacted,
+            // especially important for large object heap
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
+            GC.WaitForPendingFinalizers();
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
 
             var memoryAfter = GC.GetTotalMemory(true);
             var memoryFreed = memoryBefore - memoryAfter;
