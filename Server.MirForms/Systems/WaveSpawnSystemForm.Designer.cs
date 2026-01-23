@@ -22,6 +22,7 @@ namespace Server.MirForms.Systems
             this.ActiveWavesListView = new System.Windows.Forms.ListView();
             this.StopWaveButton = new System.Windows.Forms.Button();
             this.StartWaveButton = new System.Windows.Forms.Button();
+            this.WaveConfigComboBox = new System.Windows.Forms.ComboBox();
             this.WaveConfigTab = new System.Windows.Forms.TabPage();
             this.WaveSpawnListBox = new System.Windows.Forms.ListBox();
             this.WaveName_textbox = new System.Windows.Forms.TextBox();
@@ -122,6 +123,7 @@ namespace Server.MirForms.Systems
             this.ActiveWavesTab.Controls.Add(this.ActiveWavesListView);
             this.ActiveWavesTab.Controls.Add(this.StopWaveButton);
             this.ActiveWavesTab.Controls.Add(this.StartWaveButton);
+            this.ActiveWavesTab.Controls.Add(this.WaveConfigComboBox);
             this.ActiveWavesTab.Location = new System.Drawing.Point(4, 22);
             this.ActiveWavesTab.Name = "ActiveWavesTab";
             this.ActiveWavesTab.Padding = new System.Windows.Forms.Padding(3);
@@ -159,6 +161,16 @@ namespace Server.MirForms.Systems
             this.StopWaveButton.Text = "Stop Wave";
             this.StopWaveButton.UseVisualStyleBackColor = true;
             this.StopWaveButton.Click += new System.EventHandler(this.StopWaveButton_Click);
+            // 
+            // WaveConfigComboBox
+            // 
+            this.WaveConfigComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.WaveConfigComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.WaveConfigComboBox.FormattingEnabled = true;
+            this.WaveConfigComboBox.Location = new System.Drawing.Point(3, 509);
+            this.WaveConfigComboBox.Name = "WaveConfigComboBox";
+            this.WaveConfigComboBox.Size = new System.Drawing.Size(300, 21);
+            this.WaveConfigComboBox.TabIndex = 3;
             // 
             // StartWaveButton
             // 
@@ -998,5 +1010,6 @@ namespace Server.MirForms.Systems
         private System.Windows.Forms.Label SpawnDelay_label;
         private System.Windows.Forms.Label RoundStartDelay_label;
         private System.Windows.Forms.Label CompletionCheckInterval_label;
+        private System.Windows.Forms.ComboBox WaveConfigComboBox;
     }
 }

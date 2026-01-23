@@ -214,6 +214,30 @@ namespace Server.MirDatabase
                     Envir.StartPoints.Add(SafeZones[i]);
         }
 
+        /// <summary>
+        /// Creates a map instance dynamically without adding SafeZones to StartPoints.
+        /// Used for temporary instances like wave spawns that should not be spawn points.
+        /// </summary>
+        public Map CreateMapInstance()
+        {
+            // Create NPCs for this map
+            for (int j = 0; j < Envir.NPCInfoList.Count; j++)
+            {
+                if (Envir.NPCInfoList[j].MapIndex != Index) continue;
+                NPCs.Add(Envir.NPCInfoList[j]);
+            }
+
+            Map map = new Map(this);
+            if (!map.Load()) return null;
+
+            Envir.MapList.Add(map);
+
+            // Note: We don't add SafeZones to StartPoints for instances
+            // Instances are temporary and shouldn't be spawn points
+
+            return map;
+        }
+
         public void CreateSafeZone()
         {
             SafeZones.Add(new SafeZoneInfo { Info = this });

@@ -44,6 +44,9 @@ namespace Server.MirForms.Systems
             // Populate spawn type combo
             SpawnType_combo.Items.AddRange(Enum.GetValues(typeof(SpawnType)).Cast<object>().ToArray());
 
+            // Setup UseInstances checkbox event handler
+            UseInstances_checkbox.CheckedChanged += UseInstances_checkbox_CheckedChanged;
+
             // Setup refresh timer for active waves
             refreshTimer = new Timer();
             refreshTimer.Interval = 1000; // 1 second
@@ -51,6 +54,22 @@ namespace Server.MirForms.Systems
             refreshTimer.Start();
 
             UpdateInterface();
+        }
+
+        private void UseInstances_checkbox_CheckedChanged(object sender, EventArgs e)
+        {
+            // When UseInstances is checked, disable InstanceId textbox
+            // Instances are now created automatically with unique IDs (Option B: StartTime + PlayerID + Random)
+            InstanceId_textbox.Enabled = !UseInstances_checkbox.Checked;
+            if (UseInstances_checkbox.Checked)
+            {
+                InstanceId_textbox.Text = "0"; // Set to 0, will be auto-generated
+                InstanceId_textbox.BackColor = System.Drawing.SystemColors.Control; // Visual indication it's disabled
+            }
+            else
+            {
+                InstanceId_textbox.BackColor = System.Drawing.SystemColors.Window;
+            }
         }
 
         private void RefreshTimer_Tick(object sender, EventArgs e)
@@ -67,9 +86,11 @@ namespace Server.MirForms.Systems
         private void UpdateWaveSpawnList()
         {
             WaveSpawnListBox.Items.Clear();
+            WaveConfigComboBox.Items.Clear();
             foreach (var wave in EditEnvir.WaveSpawnInfoList)
             {
                 WaveSpawnListBox.Items.Add(wave);
+                WaveConfigComboBox.Items.Add(wave);
             }
         }
 
@@ -549,19 +570,46 @@ namespace Server.MirForms.Systems
 
         private void StartWaveButton_Click(object sender, EventArgs e)
         {
-            if (ActiveWavesListView.SelectedItems.Count == 0)
+            if (WaveConfigComboBox.SelectedItem == null)
             {
-                MessageBox.Show("Please select a wave configuration from the Wave Configurations tab first.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Please select a wave configuration from the dropdown.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            if (WaveSpawnListBox.SelectedItem == null)
+            // Get the selected wave from EditEnvir to get its Index/Name
+            var selectedWave = (WaveSpawnInfo)WaveConfigComboBox.SelectedItem;
+            
+            // Sync data from EditEnvir to Envir before starting to ensure latest changes are used
+            if (EditEnvir.WaveSpawnInfoList != null)
             {
-                MessageBox.Show("Please select a wave configuration.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Envir.WaveSpawnInfoList = new List<WaveSpawnInfo>(EditEnvir.WaveSpawnInfoList);
+                Envir.WaveSpawnIndex = EditEnvir.WaveSpawnIndex;
+            }
+            
+            // Look up the wave from the running server's Envir (not EditEnvir)
+            // This ensures we use the data that's actually loaded in the running server
+            var waveInfo = Envir.WaveSpawnInfoList.FirstOrDefault(x => x.Index == selectedWave.Index);
+            if (waveInfo == null)
+            {
+                MessageBox.Show($"Wave '{selectedWave.Name}' not found in server database. Please ensure the database is saved and the wave exists.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            var waveInfo = (WaveSpawnInfo)WaveSpawnListBox.SelectedItem;
+            // Validate that the wave has a valid map configured
+            if (waveInfo.MapIndex == 0)
+            {
+                MessageBox.Show($"Wave '{waveInfo.Name}' does not have a valid map configured. Please set a map in the wave configuration.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Validate that the map exists
+            var mapInfo = Envir.MapInfoList.FirstOrDefault(x => x.Index == waveInfo.MapIndex);
+            if (mapInfo == null)
+            {
+                MessageBox.Show($"Wave '{waveInfo.Name}' references a map that doesn't exist (MapIndex: {waveInfo.MapIndex}). Please select a valid map.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             var player = Envir.Players.FirstOrDefault();
             if (player == null)
             {

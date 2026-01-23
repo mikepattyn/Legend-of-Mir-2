@@ -1,4 +1,4 @@
-﻿using ClientPackets;
+using ClientPackets;
 using Server.Library.MirDatabase;
 using Server.Library.Utils;
 using Server.MirDatabase;
@@ -4608,6 +4608,16 @@ namespace Server.MirEnvir
 
             var instanceMapList = MapList.Where(t => string.Equals(t.Info.FileName, name, StringComparison.CurrentCultureIgnoreCase)).ToList();
             return instanceValue < instanceMapList.Count() ? instanceMapList[instanceValue] : null;
+        }
+
+        /// <summary>
+        /// Creates a map instance dynamically from a MapInfo.
+        /// Used for temporary instances like wave spawns.
+        /// </summary>
+        public Map CreateMapInstance(MapInfo mapInfo)
+        {
+            if (mapInfo == null) return null;
+            return mapInfo.CreateMapInstance();
         }
 
         public MapObject GetObject(uint objectID)

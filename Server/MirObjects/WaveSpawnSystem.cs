@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Linq;
 using Server.MirDatabase;
 using Server.MirEnvir;
 using S = ServerPackets;
@@ -87,6 +88,11 @@ namespace Server.MirObjects
         public int CurrentSpawnCount = 0;
         public WaveRound CurrentRoundInfo;
         public List<StaggeredSpawn> PendingSpawns = new List<StaggeredSpawn>();
+        
+        // Dynamic instance tracking
+        public bool IsDynamicInstance = false;
+        public int InstanceId = 0;
+        private Map PreviousRoundMap = null; // Track previous round's map for cleanup
 
         public WaveSpawnInstance(WaveSpawnInfo info, PlayerObject player)
         {
@@ -95,16 +101,28 @@ namespace Server.MirObjects
             StartTime = Envir.Time;
             State = WaveState.Starting;
 
-            // Get the map
+            // Generate unique instance ID if using instances (Option B: StartTime + PlayerID + Random)
             if (Info.UseInstances)
             {
-                CurrentMap = Envir.GetMapByNameAndInstance(
-                    Envir.MapInfoList.FirstOrDefault(x => x.Index == Info.MapIndex)?.FileName ?? "",
-                    Info.InstanceId);
+                var uniqueIdString = $"{StartTime}_{player.ObjectID}_{Envir.Random.Next(1000, 9999)}";
+                InstanceId = uniqueIdString.GetHashCode();
+                
+                // Create map instance dynamically
+                var mapInfo = Envir.MapInfoList.FirstOrDefault(x => x.Index == Info.MapIndex);
+                if (mapInfo != null)
+                {
+                    CurrentMap = Envir.CreateMapInstance(mapInfo);
+                    if (CurrentMap != null)
+                    {
+                        IsDynamicInstance = true;
+                    }
+                }
             }
             else
             {
+                // Use existing map (non-instance mode)
                 CurrentMap = Envir.GetMap(Info.MapIndex);
+                InstanceId = Info.InstanceId; // Use config value for non-instance mode
             }
 
             if (CurrentMap == null)
@@ -178,19 +196,52 @@ namespace Server.MirObjects
             CurrentSpawnCount = 0;
 
             // Check if we need to change map
-            if (CurrentRoundInfo.MapIndex != Info.MapIndex || CurrentRoundInfo.InstanceId != Info.InstanceId)
+            bool needsNewMap = false;
+            if (Info.UseInstances)
             {
+                // For instances, check if round uses different map
+                if (CurrentRoundInfo.MapIndex != Info.MapIndex)
+                {
+                    needsNewMap = true;
+                }
+                // If same map, reuse existing instance
+            }
+            else
+            {
+                // For non-instances, check if map index changed
+                if (CurrentRoundInfo.MapIndex != Info.MapIndex)
+                {
+                    needsNewMap = true;
+                }
+            }
+
+            if (needsNewMap)
+            {
+                // Clean up previous round's map if it was dynamically created
+                if (PreviousRoundMap != null && PreviousRoundMap != CurrentMap)
+                {
+                    CleanupMapInstance(PreviousRoundMap);
+                }
+
                 Map newMap = null;
                 if (Info.UseInstances)
                 {
+                    // Create new dynamic instance for this round
                     var mapInfo = Envir.MapInfoList.FirstOrDefault(x => x.Index == CurrentRoundInfo.MapIndex);
                     if (mapInfo != null)
                     {
-                        newMap = Envir.GetMapByNameAndInstance(mapInfo.FileName, CurrentRoundInfo.InstanceId);
+                        newMap = Envir.CreateMapInstance(mapInfo);
+                        if (newMap != null)
+                        {
+                            // Store previous map for cleanup
+                            PreviousRoundMap = CurrentMap;
+                            IsDynamicInstance = true;
+                        }
                     }
                 }
                 else
                 {
+                    // Use existing map (non-instance mode)
                     newMap = Envir.GetMap(CurrentRoundInfo.MapIndex);
                 }
 
@@ -207,6 +258,16 @@ namespace Server.MirObjects
                         }
                     }
                 }
+                else
+                {
+                    State = WaveState.Error;
+                    return;
+                }
+            }
+            else if (Info.UseInstances && CurrentRoundInfo.MapIndex == Info.MapIndex)
+            {
+                // Same map, reuse existing instance
+                // No need to create new instance or teleport
             }
 
             // Send message to players
@@ -273,6 +334,8 @@ namespace Server.MirObjects
 
         private void SpawnMonster(MonsterInfo monsterInfo, Point location)
         {
+            if (CurrentMap == null) return;
+
             var monster = MonsterObject.GetMonster(monsterInfo);
             if (monster == null) return;
 
@@ -286,6 +349,9 @@ namespace Server.MirObjects
         private List<Point> GetSpawnLocations(int count)
         {
             var locations = new List<Point>();
+
+            if (CurrentMap == null || CurrentRoundInfo == null)
+                return locations;
 
             if (CurrentRoundInfo.SpawnRadius > 0 && CurrentRoundInfo.SpawnCenter != Point.Empty)
             {
@@ -464,6 +530,62 @@ namespace Server.MirObjects
                 }
             }
             SpawnedMonsters.Clear();
+
+            // Clean up dynamically created map instances
+            if (IsDynamicInstance && CurrentMap != null)
+            {
+                CleanupMapInstance(CurrentMap);
+            }
+
+            // Clean up previous round's map if it was dynamically created
+            if (PreviousRoundMap != null && PreviousRoundMap != CurrentMap)
+            {
+                CleanupMapInstance(PreviousRoundMap);
+            }
+        }
+
+        private void CleanupMapInstance(Map map)
+        {
+            if (map == null) return;
+
+            // Remove all players from the map (teleport them to safe location)
+            foreach (var player in map.Players.ToList())
+            {
+                if (player != null)
+                {
+                    // Teleport player to a safe location (bind map or start point)
+                    var safeMap = Envir.GetMap(player.BindMapIndex);
+                    if (safeMap != null && safeMap.ValidPoint(player.BindLocation))
+                    {
+                        player.Teleport(safeMap, player.BindLocation);
+                    }
+                    else
+                    {
+                        // Fallback to first start point
+                        if (Envir.StartPoints.Count > 0)
+                        {
+                            var startPoint = Envir.StartPoints[0];
+                            var startMap = Envir.GetMap(startPoint.Info.Index);
+                            if (startMap != null)
+                            {
+                                player.Teleport(startMap, startPoint.Location);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Note: Monsters are already cleaned up in Cleanup() via SpawnedMonsters list
+            // Any remaining monsters on the map will be cleaned up when the map is removed
+            // We don't need to iterate through all objects as we track our spawned monsters
+
+            // Note: We don't remove NPCs as they're part of the map structure and will be cleaned up with the map
+
+            // Remove map from Envir.MapList
+            if (Envir.MapList.Contains(map))
+            {
+                Envir.MapList.Remove(map);
+            }
         }
 
         private void ProcessStaggeredSpawns()

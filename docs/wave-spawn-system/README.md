@@ -91,9 +91,9 @@ Each wave (`WaveSpawnInfo`) contains:
 - **Basic Information**
   - `Name`: Display name for the wave
   - `Description`: Optional description
-  - `MapIndex`: Default map for the wave
-  - `InstanceId`: Instance ID (if using instances)
-  - `UseInstances`: Whether to use map instances
+  - `MapIndex`: Default map for the wave (must be selected)
+  - `InstanceId`: Instance ID (automatically generated when `UseInstances` is enabled)
+  - `UseInstances`: Whether to use dynamic map instances (creates unique instances automatically)
 
 - **Timer Settings**
   - `RoundDuration`: Duration of each round in seconds (0 = no time limit)
@@ -247,7 +247,7 @@ Each reward item contains:
 ### Starting a Wave
 
 1. Navigate to the **Active Waves** tab
-2. Select a wave configuration from the dropdown (if available)
+2. Select a wave configuration from the dropdown next to the **Start Wave** button
 3. Click **Start Wave**
 4. The wave will begin spawning monsters according to its configuration
 
@@ -269,15 +269,37 @@ The **Active Waves** tab displays:
 
 ### Saving Configuration
 
-After making changes, click **Save DB** to persist all configurations to the database.
+After making changes, click **Save DB** to persist all configurations to the database. The form will also automatically save all changes when you close it, ensuring your wave configurations and rounds are persisted across server restarts.
+
+**Note:** Always click **Save DB** after making significant changes, or simply close the form to automatically save. Your configurations will be loaded automatically when the server starts.
 
 ## Technical Details
+
+### Dynamic Map Instancing
+
+When `UseInstances` is enabled, the system automatically creates unique map instances in memory for each wave. This allows:
+
+- **Multiple simultaneous waves**: Multiple players can run the same wave configuration at the same time without conflicts
+- **No file copying required**: Map instances are created dynamically from the base map file - no need to copy map files multiple times
+- **Automatic cleanup**: Map instances are automatically removed when waves complete or are stopped
+- **Unique instance IDs**: Each wave instance gets a unique identifier generated from: `StartTime + PlayerID + Random` (Option B strategy)
+
+**How it works:**
+1. When a wave starts with `UseInstances = true`, the system creates a new `Map` object from the base `MapInfo`
+2. The map instance is added to `Envir.MapList` for tracking
+3. Players are teleported to this unique instance
+4. When the wave completes or is stopped, the instance is cleaned up and removed from memory
+
+**Round-specific maps:**
+- If a round specifies a different `MapIndex`, a new instance is created for that round
+- The previous round's instance is cleaned up automatically
+- If a round uses the same map, the existing instance is reused
 
 ### Integration Points
 
 - **Envir Integration**: The system is integrated into `Envir.Process()` loop
 - **Database Persistence**: Wave configurations are saved/loaded via binary serialization
-- **Map System**: Uses the existing map and instance system
+- **Map System**: Uses dynamic map instance creation via `MapInfo.CreateMapInstance()`
 - **Monster System**: Spawns monsters using `MonsterObject.GetMonster()`
 
 ### Processing Loop
@@ -357,8 +379,9 @@ The system checks for round completion:
 
 ### Wave Not Starting
 - Check wave configuration is saved
-- Verify map exists
+- Verify map exists and is selected in the wave configuration
 - Check player permissions
+- If using instances, ensure `UseInstances` is checked (instances are created automatically)
 
 ## Future Enhancements
 
@@ -369,3 +392,100 @@ Potential improvements for the system:
 - Dynamic difficulty adjustment
 - Wave templates and presets
 - Integration with quest system
+
+### Instance Management Enhancements
+
+#### 1. Instance Pooling for Performance (Reuse Instances)
+
+**Goal:** Improve performance by reusing map instances instead of creating new ones for each wave.
+
+**Benefits:**
+- Reduced memory allocation overhead
+- Faster wave startup times
+- Lower garbage collection pressure
+- Better scalability for high-frequency wave usage
+
+**Implementation Plan:**
+- Create an `InstancePool` class to manage available map instances
+- Maintain a pool of pre-initialized map instances per map type
+- When a wave starts, check the pool for an available instance
+- If available, reuse it; otherwise create a new one
+- After wave completion, return the instance to the pool instead of destroying it
+- Implement pool size limits (min/max instances per map)
+- Add configuration for pool size per map type
+- Ensure proper cleanup/reset of instances before reuse (clear monsters, reset state)
+
+**Technical Considerations:**
+- Need to reset map state (monsters, objects) before reuse
+- Handle edge cases where instance is in use when pool is checked
+- Consider thread safety if multiple waves start simultaneously
+- Monitor pool hit/miss rates for optimization
+
+#### 2. Instance Expiration Timer (Clean Up Abandoned Instances)
+
+**Goal:** Automatically clean up map instances that are no longer in use or have been abandoned.
+
+**Benefits:**
+- Prevent memory leaks from abandoned instances
+- Automatic resource cleanup
+- Better resource management
+- Handle edge cases where players disconnect mid-wave
+
+**Implementation Plan:**
+- Add `LastActivityTime` tracking to each instance
+- Implement a background cleanup process that runs periodically
+- Define configurable expiration timeout (e.g., 30 minutes of inactivity)
+- When expiration timer triggers:
+  - Check if instance has active players
+  - If no players and timeout exceeded, mark for cleanup
+  - Gracefully stop any active waves in the instance
+  - Remove instance from active list and pool
+- Add configuration for expiration timeout
+- Log cleanup events for monitoring
+- Consider different timeouts for different wave types
+
+**Technical Considerations:**
+- Ensure cleanup doesn't interrupt active gameplay
+- Handle race conditions between cleanup and wave start
+- Integrate with instance pooling (return to pool vs. destroy)
+- Add admin override to prevent cleanup if needed
+
+#### 3. Instance Monitoring/Statistics in Admin UI
+
+**Goal:** Provide administrators with visibility into instance usage, performance, and health metrics.
+
+**Benefits:**
+- Better system observability
+- Performance optimization insights
+- Resource usage monitoring
+- Troubleshooting capabilities
+
+**Implementation Plan:**
+- Add new tab or section in `WaveSpawnSystemForm` for instance monitoring
+- Display real-time statistics:
+  - Total active instances
+  - Instances per map type
+  - Average instance lifetime
+  - Pool utilization (if pooling implemented)
+  - Instance creation/destruction rates
+  - Active players per instance
+  - Memory usage per instance (if measurable)
+- Add instance list view showing:
+  - Instance ID
+  - Associated map
+  - Creation time
+  - Last activity time
+  - Current player count
+  - Active wave (if any)
+  - Status (active, idle, expired)
+- Implement refresh mechanism for real-time updates
+- Add filtering and sorting capabilities
+- Export statistics to log file or database
+- Add visual indicators for health status (e.g., color coding)
+
+**Technical Considerations:**
+- Minimize performance impact of statistics collection
+- Use efficient data structures for tracking
+- Consider caching statistics to reduce UI update frequency
+- Ensure thread-safe access to statistics data
+- Add configuration to enable/disable detailed tracking
