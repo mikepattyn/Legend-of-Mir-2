@@ -1,4 +1,4 @@
-﻿using ClientPackets;
+using ClientPackets;
 using Server.Library.MirDatabase;
 using Server.Library.Utils;
 using Server.MirDatabase;
@@ -53,7 +53,7 @@ namespace Server.MirEnvir
         public static object LoadLock = new object();
 
         public const int MinVersion = 60;
-        public const int Version = 116;
+        public const int Version = 117;
         public const int CustomVersion = 0;
         public static readonly string DatabasePath = Path.Combine(".", "Server.MirDB");
         public static readonly string AccountPath = Path.Combine(".", "Server.MirADB");
@@ -107,7 +107,7 @@ namespace Server.MirEnvir
         public List<MirConnection> Connections = new List<MirConnection>();
 
         //Server DB
-        public int MapIndex, ItemIndex, MonsterIndex, NPCIndex, QuestIndex, GameshopIndex, ConquestIndex, RespawnIndex, ScriptIndex;
+        public int MapIndex, ItemIndex, MonsterIndex, NPCIndex, QuestIndex, GameshopIndex, ConquestIndex, RespawnIndex, ScriptIndex, WaveSpawnIndex;
         public List<MapInfo> MapInfoList = new List<MapInfo>();
         public List<ItemInfo> ItemInfoList = new List<ItemInfo>();
         public List<MonsterInfo> MonsterInfoList = new List<MonsterInfo>();
@@ -119,6 +119,7 @@ namespace Server.MirEnvir
         public List<RecipeInfo> RecipeInfoList = new List<RecipeInfo>();
         public List<BuffInfo> BuffInfoList = new List<BuffInfo>();
         public List<ConquestInfo> ConquestInfoList = new List<ConquestInfo>();
+        public List<WaveSpawnInfo> WaveSpawnInfoList = new List<WaveSpawnInfo>();
         public List<GTMap> GTMapList = new List<GTMap>();
 
         //User DB
@@ -162,6 +163,7 @@ namespace Server.MirEnvir
 
         public Dragon DragonSystem;
         public NPCScript DefaultNPC, MonsterNPC, RobotNPC;
+        public WaveSpawnSystem WaveSpawnSystem = new WaveSpawnSystem();
 
         public List<DropInfo> FishingDrops = new List<DropInfo>();
         public List<DropInfo> AwakeningDrops = new List<DropInfo>();
@@ -189,7 +191,7 @@ namespace Server.MirEnvir
         public static long LastRunTime = 0;
         public int MonsterCount;
 
-        private long warTime, guildTime, conquestTime, rentalItemsTime, auctionTime, spawnTime, robotTime, timerTime;
+        private long warTime, guildTime, conquestTime, rentalItemsTime, auctionTime, spawnTime, robotTime, timerTime, waveSpawnTime;
         private int dailyTime = DateTime.UtcNow.Day;
         private bool MagicExists(Spell spell)
         {
@@ -2336,6 +2338,12 @@ namespace Server.MirEnvir
                 }
             }
 
+            if (Time >= waveSpawnTime)
+            {
+                waveSpawnTime = Time + Settings.Second;
+                WaveSpawnSystem.Process();
+            }
+
             if (Time >= rentalItemsTime)
             {
                 rentalItemsTime = Time + Settings.Minute * 5;
@@ -2442,6 +2450,7 @@ namespace Server.MirEnvir
                 writer.Write(GameshopIndex);
                 writer.Write(ConquestIndex);
                 writer.Write(RespawnIndex);
+                writer.Write(WaveSpawnIndex);
 
                 writer.Write(MapInfoList.Count);
                 for (var i = 0; i < MapInfoList.Count; i++)
@@ -2475,6 +2484,10 @@ namespace Server.MirEnvir
                 writer.Write(ConquestInfoList.Count);
                 for (var i = 0; i < ConquestInfoList.Count; i++)
                     ConquestInfoList[i].Save(writer);
+
+                writer.Write(WaveSpawnInfoList.Count);
+                for (var i = 0; i < WaveSpawnInfoList.Count; i++)
+                    WaveSpawnInfoList[i].Save(writer);
 
                 RespawnTick.Save(writer);
 
@@ -2835,6 +2848,9 @@ namespace Server.MirEnvir
                     if (LoadVersion >= 68)
                         RespawnIndex = reader.ReadInt32();
 
+                    if (LoadVersion >= 117)
+                        WaveSpawnIndex = reader.ReadInt32();
+
 
                     var count = reader.ReadInt32();
                     MapInfoList.Clear();
@@ -2900,6 +2916,16 @@ namespace Server.MirEnvir
                         for (var i = 0; i < count; i++)
                         {
                             ConquestInfoList.Add(new ConquestInfo(reader));
+                        }
+                    }
+
+                    if (LoadVersion >= 117)
+                    {
+                        WaveSpawnInfoList.Clear();
+                        count = reader.ReadInt32();
+                        for (var i = 0; i < count; i++)
+                        {
+                            WaveSpawnInfoList.Add(new WaveSpawnInfo(reader));
                         }
                     }
 
@@ -4582,6 +4608,16 @@ namespace Server.MirEnvir
 
             var instanceMapList = MapList.Where(t => string.Equals(t.Info.FileName, name, StringComparison.CurrentCultureIgnoreCase)).ToList();
             return instanceValue < instanceMapList.Count() ? instanceMapList[instanceValue] : null;
+        }
+
+        /// <summary>
+        /// Creates a map instance dynamically from a MapInfo.
+        /// Used for temporary instances like wave spawns.
+        /// </summary>
+        public Map CreateMapInstance(MapInfo mapInfo)
+        {
+            if (mapInfo == null) return null;
+            return mapInfo.CreateMapInstance();
         }
 
         public MapObject GetObject(uint objectID)

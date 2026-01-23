@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -110,6 +110,7 @@ namespace Server
             mentorToolStripMenuItem = new ToolStripMenuItem();
             gemToolStripMenuItem = new ToolStripMenuItem();
             conquestToolStripMenuItem = new ToolStripMenuItem();
+            waveSpawnSystemToolStripMenuItem = new ToolStripMenuItem();
             respawnsToolStripMenuItem = new ToolStripMenuItem();
             heroesToolStripMenuItem = new ToolStripMenuItem();
             monsterTunerToolStripMenuItem = new ToolStripMenuItem();
@@ -633,7 +634,7 @@ namespace Server
             // 
             // systemToolStripMenuItem
             // 
-            systemToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dragonSystemToolStripMenuItem, miningToolStripMenuItem, guildsToolStripMenuItem, fishingToolStripMenuItem, mailToolStripMenuItem, goodsToolStripMenuItem, refiningToolStripMenuItem, relationshipToolStripMenuItem, mentorToolStripMenuItem, gemToolStripMenuItem, conquestToolStripMenuItem, respawnsToolStripMenuItem, heroesToolStripMenuItem });
+            systemToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dragonSystemToolStripMenuItem, miningToolStripMenuItem, guildsToolStripMenuItem, fishingToolStripMenuItem, mailToolStripMenuItem, goodsToolStripMenuItem, refiningToolStripMenuItem, relationshipToolStripMenuItem, mentorToolStripMenuItem, gemToolStripMenuItem, conquestToolStripMenuItem, waveSpawnSystemToolStripMenuItem, respawnsToolStripMenuItem, heroesToolStripMenuItem });
             systemToolStripMenuItem.Name = "systemToolStripMenuItem";
             systemToolStripMenuItem.Size = new Size(152, 22);
             systemToolStripMenuItem.Text = "System";
@@ -714,6 +715,13 @@ namespace Server
             conquestToolStripMenuItem.Size = new Size(139, 22);
             conquestToolStripMenuItem.Text = "Conquest";
             conquestToolStripMenuItem.Click += conquestToolStripMenuItem_Click;
+            // 
+            // waveSpawnSystemToolStripMenuItem
+            // 
+            waveSpawnSystemToolStripMenuItem.Name = "waveSpawnSystemToolStripMenuItem";
+            waveSpawnSystemToolStripMenuItem.Size = new Size(139, 22);
+            waveSpawnSystemToolStripMenuItem.Text = "Wave Spawn System";
+            waveSpawnSystemToolStripMenuItem.Click += waveSpawnSystemToolStripMenuItem_Click;
             // 
             // respawnsToolStripMenuItem
             // 
@@ -858,6 +866,7 @@ namespace Server
         private ToolStripMenuItem gameshopToolStripMenuItem;
         private ToolStripMenuItem gemToolStripMenuItem;
         private ToolStripMenuItem conquestToolStripMenuItem;
+        private ToolStripMenuItem waveSpawnSystemToolStripMenuItem;
         private ToolStripMenuItem rebootServerToolStripMenuItem;
         private ToolStripMenuItem respawnsToolStripMenuItem;
         private ToolStripMenuItem monsterTunerToolStripMenuItem;
