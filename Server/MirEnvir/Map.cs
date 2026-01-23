@@ -2588,5 +2588,14 @@ namespace Server.MirEnvir
                 Route.Add(info);
             }
         }
+
+        public void ClearReferences()
+        {
+            Map = null;
+            WalkableCells?.Clear();
+            WalkableCells = null;
+            Route?.Clear();
+            Route = null;
+        }
     }
 }
