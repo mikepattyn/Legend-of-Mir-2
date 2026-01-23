@@ -595,12 +595,21 @@ namespace Server.MirForms.Systems
                 Envir.WaveSpawnIndex = EditEnvir.WaveSpawnIndex;
             }
 
-            EditEnvir.SaveDB();
+            // Save the Main Envir database (not EditEnvir) - this is what the running server uses
+            Envir.SaveDB();
             MessageBox.Show("Database saved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            // Sync and save data when form closes to ensure persistence
+            if (EditEnvir.WaveSpawnInfoList != null)
+            {
+                Envir.WaveSpawnInfoList = new List<WaveSpawnInfo>(EditEnvir.WaveSpawnInfoList);
+                Envir.WaveSpawnIndex = EditEnvir.WaveSpawnIndex;
+                Envir.SaveDB();
+            }
+
             refreshTimer?.Stop();
             refreshTimer?.Dispose();
             base.OnFormClosing(e);

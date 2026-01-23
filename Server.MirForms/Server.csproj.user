@@ -79,6 +79,9 @@
     <Compile Update="Systems\SystemInfoForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Systems\WaveSpawnSystemForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="VisualMapInfo\Control\Forms\MiningDetailForm.cs">
       <SubType>Form</SubType>
     </Compile>
