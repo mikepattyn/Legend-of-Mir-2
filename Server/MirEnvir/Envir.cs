@@ -1,4 +1,4 @@
-﻿using ClientPackets;
+using ClientPackets;
 using Server.Library.MirDatabase;
 using Server.Library.Utils;
 using Server.MirDatabase;
@@ -3248,6 +3248,8 @@ namespace Server.MirEnvir
                 if (MobThreads[i] != null)
                 {
                     MobThreads[i].EndTime = Time + 9999;
+                    // Clear ObjectsList to release references to MapObjects
+                    MobThreads[i].ObjectsList?.Clear();
                 }
                 if (MobThreading[i] != null &&
                     MobThreading[i].ThreadState != System.Threading.ThreadState.Stopped && MobThreading[i].ThreadState != System.Threading.ThreadState.Unstarted)
@@ -3408,12 +3410,60 @@ namespace Server.MirEnvir
 
         private void StopEnvir()
         {
+            var memoryBefore = GC.GetTotalMemory(false);
+            MessageQueue.Enqueue($"Memory before cleanup: {memoryBefore / 1024 / 1024} MB");
+
             SaveGoods(true);
+
+            // Clear SavedSpawns FIRST to break circular references
+            // This prevents MapRespawn objects from holding references to Maps
+            foreach (var spawn in SavedSpawns)
+            {
+                spawn?.ClearReferences();
+            }
+            SavedSpawns.Clear();
+
+            // Clear all map internal collections before clearing MapList
+            // This ensures all nested collections are released and breaks reference chains
+            foreach (var map in MapList)
+            {
+                if (map != null)
+                {
+                    map.Respawns?.Clear();
+                    map.WalkableCells?.Clear();
+                    map.NPCs?.Clear();
+                    map.Players?.Clear();
+                    map.Spells?.Clear();
+                    map.Heroes?.Clear();
+                    map.ActionList?.Clear();
+                    map.Conquest?.Clear();
+                    // Nullify large arrays to help GC
+                    map.Cells = null;
+                    map.DoorIndex = null;
+                    map.Mine = null;
+                }
+            }
 
             MapList.Clear();
             StartPoints.Clear();
             StartItems.Clear();
+
+            // Despawn all objects before clearing to ensure proper cleanup
+            // This breaks references from MapObjects to Maps, Cells, etc.
+            var objectsToDespawn = Objects.ToList(); // Create copy to avoid modification during iteration
+            foreach (var obj in objectsToDespawn)
+            {
+                try
+                {
+                    obj?.Despawn();
+                }
+                catch (Exception ex)
+                {
+                    MessageQueue.Enqueue($"Error despawning object {obj?.ObjectID}: {ex.Message}");
+                }
+            }
             Objects.Clear();
+
             Players.Clear();
             Heroes.Clear();
             GTMapList.Clear();
@@ -3421,6 +3471,11 @@ namespace Server.MirEnvir
             CleanUp();
 
             GC.Collect();
+
+            var memoryAfter = GC.GetTotalMemory(true);
+            var memoryFreed = memoryBefore - memoryAfter;
+            MessageQueue.Enqueue($"Memory after cleanup: {memoryAfter / 1024 / 1024} MB");
+            MessageQueue.Enqueue($"Memory freed: {memoryFreed / 1024 / 1024} MB");
 
             MessageQueue.Enqueue(GameLanguage.ServerTextMap.GetLocalization(ServerTextKeys.EnvirStopped));
         }
