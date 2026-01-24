@@ -357,22 +357,33 @@ namespace Server.MirObjects
         }
         public virtual void Despawn()
         {
+            // Check if already despawned - return early instead of throwing
             if (Node == null)
-                throw new InvalidOperationException("Node is null, Object already Despawned");
+                return;
             
             Broadcast(new S.ObjectRemove { ObjectID = ObjectID });
-            Envir.Objects.Remove(Node);
-            if (Settings.Multithreaded && (Race == ObjectType.Monster))
+            
+            // Safely remove from main Objects list - check if node belongs to the list
+            if (Node.List == Envir.Objects)
             {
-                Envir.MobThreads[SpawnThread].ObjectsList.Remove(NodeThreaded);
+                Envir.Objects.Remove(Node);
+            }
+            Node = null;
+            
+            // Safely remove from threaded list if applicable
+            if (Settings.Multithreaded && (Race == ObjectType.Monster) && NodeThreaded != null)
+            {
+                if (NodeThreaded.List == Envir.MobThreads[SpawnThread].ObjectsList)
+                {
+                    Envir.MobThreads[SpawnThread].ObjectsList.Remove(NodeThreaded);
+                }
+                NodeThreaded = null;
             }
 
             ActionList.Clear();
 
             for (int i = Pets.Count - 1; i >= 0; i--)
                 Pets[i].Die();
-
-            Node = null;
         }
 
         public MapObject FindObject(uint targetID, int dist)
