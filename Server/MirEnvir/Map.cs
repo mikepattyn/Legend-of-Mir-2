@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 ﻿using Server.MirDatabase;
 using Server.MirObjects;
@@ -6,7 +7,7 @@ using S = ServerPackets;
 
 namespace Server.MirEnvir
 {
-    public class Map
+    public class Map : IDisposable
     {
         private static Envir Envir
         {
@@ -40,6 +41,8 @@ namespace Server.MirEnvir
 
         public List<ConquestObject> Conquest = new List<ConquestObject>();
         public ConquestObject tempConquest;
+        
+        private bool _disposed = false;
 
         public Map(MapInfo info)
         {
@@ -2471,6 +2474,52 @@ namespace Server.MirEnvir
                 Player.Enqueue(p);
             }    
         }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Clear managed resources
+                    Respawns?.Clear();
+                    WalkableCells?.Clear();
+                    NPCs?.Clear();
+                    Players?.Clear();
+                    Spells?.Clear();
+                    Heroes?.Clear();
+                    ActionList?.Clear();
+                    Conquest?.Clear();
+                    Doors?.Clear();
+
+                    // Explicitly clear Cell.Objects lists to break all references
+                    if (Cells != null)
+                    {
+                        for (int x = 0; x < Width; x++)
+                        {
+                            for (int y = 0; y < Height; y++)
+                            {
+                                Cells[x, y]?.Objects?.Clear();
+                            }
+                        }
+                    }
+
+                    // Nullify large arrays to help GC
+                    Cells = null;
+                    DoorIndex = null;
+                    Mine = null;
+                }
+
+                _disposed = true;
+            }
+        }
+
     }
     public class Cell
     {
@@ -2587,6 +2636,15 @@ namespace Server.MirEnvir
 
                 Route.Add(info);
             }
+        }
+
+        public void ClearReferences()
+        {
+            Map = null;
+            WalkableCells?.Clear();
+            WalkableCells = null;
+            Route?.Clear();
+            Route = null;
         }
     }
 }
